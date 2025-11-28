@@ -20,7 +20,6 @@ def parse_raw_lines_to_tasks(raw_lines_list: list) -> list:
         if len(parts) > 1:
             description = parts[1].strip()
         else:
-            # Fallback if format is broken
             description = line[4:].strip()
 
         parsed_lines.append({'is_done': is_done, 'description': description})
@@ -35,7 +34,7 @@ def save_tasks(task_list: list):
         is_done = task.get('is_done')
         description = task.get('description')
 
-        status = '[x]' if is_done else '[ ]'  # Pythonic ternary operator
+        status = '[x]' if is_done else '[ ]'
 
         new_task = f"{status} - {description}\n"
         lines_to_save.append(new_task)
@@ -43,6 +42,16 @@ def save_tasks(task_list: list):
     with open(FILE_NAME, 'w', encoding='utf-8') as f:
         f.writelines(lines_to_save)
     print("-> File saved.")
+
+def print_tasks(task_list: list):
+
+    for index, task in enumerate(task_list):
+        is_done = task.get('is_done')
+        description = task.get('description')
+
+        status = '[x]' if is_done else '[ ]'
+
+        print(f"{index + 1}: {status} - {description}")
 
 
 def add_task(task_list: list, description: str):
@@ -52,6 +61,7 @@ def add_task(task_list: list, description: str):
     }
     task_list.append(new_task)
     save_tasks(task_list)
+    print(f"-> Added task: {description}")
 
 
 def get_index(task_list: list, task_number: str) -> int | None:
@@ -84,7 +94,7 @@ def toggle_status(task_list: list, task_number: str):
         task_to_toggle = task_list[task_index]
         task_to_toggle['is_done'] = not task_to_toggle['is_done']
         save_tasks(task_list)
-        print(f"-> Toggled task {task_number}")
+        print(f"-> Changed status: {task_to_toggle['description']}")
 
 
 def change_description(task_list: list, task_number: str, description: str):
@@ -115,13 +125,13 @@ else:
     print("Created new todo file.")
 
 
-print("Welcom in the To Do app")
-print(
+print("Welcome in the To Do app")
+menu = (
 '''Menu:
-1) add task
-2) remove task
-3) modify task
-4) display current tasks
+1) display current tasks
+2) add task
+3) remove task
+4) modify task
 5) exit app
 ''')
 
@@ -129,25 +139,78 @@ app_state = True
 
 while app_state:
 
-    user_input = int(input("select option: "))
+    print(menu)
 
-    match user_input:
+    try:
+        option_selected = int(input("select option: "))
+    except ValueError:
+        print("! Invalid option selected")
+        print("Please select option from 1 to 5")
+        continue
+
+    match option_selected:
         case 1:
-            #add task
-            pass
+            if tasks:
+                print_tasks(tasks)
+            else:
+                print("! No tasks have been added")
+
         case 2:
-            #remove task
-            pass
+            print("Please provide description for the new task")
+            description = input("Description: ")
+            if description == "":
+                print("Description cannot be empty!")
+                continue
+
+            add_task(tasks, description)
         case 3:
-            #modify task
-            pass
+            print("Current tasks:")
+
+            if tasks:
+                print_tasks(tasks)
+            else:
+                print("! No tasks have been added")
+                continue
+
+            print("Please provide number of the task to be removed")
+            task_to_remove = (input("Task number: "))
+            remove_task(tasks, task_to_remove)
         case 4:
-            #display tasks
-            pass
+            print("Please provide number of the task to be modified")
+            task_to_modify = (input("Task number: "))
+
+            if task_to_modify == "":
+                print("Incorrect task number has been provided")
+                continue
+
+            modify_option = 0
+            print("Modify a task: provide 1 to change status of the task or 2 to change description")
+            try:
+                modify_option = int(input("Modify option: "))
+            except ValueError:
+                print("! Invalid option selected")
+                continue
+
+            if modify_option == 1:
+                toggle_status(tasks, task_to_modify)
+            elif modify_option == 2:
+                print("Please provide description for the new task")
+                description = input("Description: ")
+
+                if description == "":
+                    print("Description cannot be empty!")
+                    continue
+
+                change_description(tasks, task_to_modify, description)
+            else:
+                print("! Invalid option selected")
+                continue
+
         case 5:
-            #exit app
-            pass
+            print("Closing the application")
+            app_state = False
         case _:
-            #invalid option selected
-            pass
+            print("! Invalid option selected")
+            print("Please select option from 1 to 5")
+            continue
 
