@@ -1,0 +1,8 @@
+# Python-specific files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# User Data and JSON logs
+# Excluded all .json files so tasks and users stay local
+*.json
